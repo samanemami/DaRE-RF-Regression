@@ -1,6 +1,6 @@
 import numpy as np
 import random
-from .node import TreeNode
+from .node_ import TreeNode
 
 
 class DaRETree:
@@ -80,15 +80,28 @@ class DaRETree:
         node.split_attr, node.split_value = best_attr, best_value
         return node
 
-    def _random_node_delete(self, node, depth, instance):
-        data = self._get_data_from_leaves(node)
-        data = np.delete(data, np.where(np.all(data == instance, axis=1)), axis=0)
-        return self._train(data, depth)
-
     def _greedy_node_delete(self, node, depth, instance):
+        # Get leaf data
+        data = self._get_data_from_leaves(node)
+
+        # Delete the instance without retraining
+        data = np.delete(data, np.where(np.all(data == instance, axis=1)), axis=0)
+
+        # Update node value directly based on remaining instances
+        node.instances = data
+        if len(data) > 0:
+            node.value = np.mean(data[:, -1])
+        return node
+
+    def _random_node_delete(self, node, depth, instance):
+        # Similar to _greedy_node_delete
         data = self._get_data_from_leaves(node)
         data = np.delete(data, np.where(np.all(data == instance, axis=1)), axis=0)
-        return self._train(data, depth)
+
+        node.instances = data
+        if len(data) > 0:
+            node.value = np.mean(data[:, -1])
+        return node
 
     def _leaf_node(self, data):
         node = TreeNode()
@@ -130,3 +143,10 @@ class DaRETree:
                 self._get_data_from_leaves(node.right),
             )
         )
+
+    def delete_instances(self, instances):
+        """
+        Delete an array of instances in one go for faster performance.
+        """
+        for instance in instances:
+            self.delete_instance(instance)

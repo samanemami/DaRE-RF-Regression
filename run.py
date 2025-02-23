@@ -1,5 +1,6 @@
 # %%
 import warnings
+
 warnings.filterwarnings("ignore")
 import numpy as np
 from sklearn.model_selection import train_test_split
@@ -24,5 +25,3 @@ if __name__ == "__main__":
 
     predictions_after = forest.predict(test_data[:, :-1])
     print("RMSE after unlearning:", rmse(test_data[:, -1], predictions_after))
-
-
